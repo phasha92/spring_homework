@@ -1,48 +1,67 @@
 package homework.spring_app.service;
 
+import homework.spring_app.dto.NewsDto;
+import homework.spring_app.mapper.NewsMapper;
+import homework.spring_app.model.Category;
 import homework.spring_app.model.News;
-import jakarta.annotation.PostConstruct;
+import homework.spring_app.repository.CategoryJPA;
+import homework.spring_app.repository.NewsJPA;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Service
-public class NewsService {
-    private final Map<Long, News> newsMap;
-    private long idCounter;
+@RequiredArgsConstructor
+public class NewsService implements ServiceApp<NewsDto> {
 
-    @PostConstruct
-    public void init(){
-        idCounter = newsMap.size();
+    private static final String NOT_EXIST = "Новость не существует!";
+
+    private final NewsJPA newsJPA;
+    private final CategoryJPA categoryJPA;
+    private final NewsMapper mapper;
+
+
+    @Override
+    public NewsDto getById(Long id) {
+        Optional<News> news = newsJPA.findById(id);
+        return mapper.toDto(news.orElse(null));
     }
 
-    public NewsService(Map<Long, News> newsMap){
-        this.newsMap = new ConcurrentHashMap<>(newsMap);
+    @Override
+    public List<NewsDto> getAll() {
+        return newsJPA.findAll().stream().map(mapper::toDto).toList();
     }
 
-    public News getNews(Long id){
-        return newsMap.get(id);
+    @Override
+    @Transactional
+    public void add(NewsDto newsDto) {
+        News news = mapper.toEntity(newsDto);
+        Optional<Category> category = categoryJPA.getByTitle(newsDto.getCategory());
+        category.ifPresent(news::setCategory);
+        newsJPA.save(news);
     }
 
-    public Map<Long, News> getAllNews(){
-        return Map.copyOf(newsMap);
+    @Override
+    @Transactional
+    public void update(Long id, NewsDto newsDto) {
+        Optional<News> news = newsJPA.findById(id);
+        if (news.isPresent()) {
+            News updateNews = news.get();
+            if (newsDto.getTitle() != null) updateNews.setTitle(newsDto.getTitle());
+            if (newsDto.getText() != null) updateNews.setText(newsDto.getText());
+            if (newsDto.getDate() != null) updateNews.setDate(newsDto.getDate());
+            Optional<Category> category = categoryJPA.getByTitle(newsDto.getCategory());
+            category.ifPresent(updateNews::setCategory);
+            newsJPA.save(updateNews);
+        } else throw new RuntimeException(NOT_EXIST);
     }
 
-    public void addNews(News news){
-        news.setId(++idCounter);
-        newsMap.put(idCounter, news);
+    @Override
+    @Transactional
+    public void delete(Long id) {
+       categoryJPA.deleteById(id);
     }
-
-    public void removeNews(Long id){
-        newsMap.remove(id);
-    }
-
-    public void updateNews(Long id, News news){
-        News oldNews = newsMap.get(id);
-        oldNews.setText(news.getText());
-        oldNews.setTitle(news.getTitle());
-        oldNews.setDate(news.getDate());
-    }
-
 }
