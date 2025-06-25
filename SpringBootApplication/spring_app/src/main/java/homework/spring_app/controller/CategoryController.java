@@ -52,6 +52,7 @@ public class CategoryController {
         if (service.getById(id) == null) {
             return notFound(id);
         }
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 

@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: v2-init-category
+      author: Pavel
+      changes:
+        - createTable:
+            tableName: category
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: category
+            columnNames: title
+            constraintName: uq_category_title

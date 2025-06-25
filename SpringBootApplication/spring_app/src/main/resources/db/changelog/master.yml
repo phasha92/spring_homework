@@ -1,0 +1,10 @@
+databaseChangeLog:
+        - include:
+                  file: v1-init-news.yml
+                  relativeToChangelogFile: true
+        - include:
+                  file: v2-init-category.yml
+                  relativeToChangelogFile: true
+        - include:
+                  file: v3-add-foreign-key.yml
+                  relativeToChangelogFile: true

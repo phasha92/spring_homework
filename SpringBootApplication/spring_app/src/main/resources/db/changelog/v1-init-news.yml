@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: v1-init-news
+      author: Pavel
+      changes:
+        - createTable:
+            tableName: news
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+              - column:
+                  name: text
+                  type: TEXT
+              - column:
+                  name: date
+                  type: TIMESTAMP WITH TIME ZONE

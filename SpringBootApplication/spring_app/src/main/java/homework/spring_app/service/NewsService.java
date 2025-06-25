@@ -62,6 +62,6 @@ public class NewsService implements ServiceApp<NewsDto> {
     @Override
     @Transactional
     public void delete(Long id) {
-       categoryJPA.deleteById(id);
+       newsJPA.deleteById(id);
     }
 }

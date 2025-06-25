@@ -6,9 +6,12 @@ spring:
     username: user
     password: 1234
     driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:db/changelog/master.yml
+    enabled: true
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
 server:
   port: 8081

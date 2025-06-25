@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: v3-add-category-id-to-news
+      author: Pavel
+      changes:
+        - addColumn:
+            tableName: news
+            columns:
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  value: null
+
+        - addForeignKeyConstraint:
+            baseTableName: news
+            baseColumnNames: category_id
+            constraintName: fk_news_category
+            referencedTableName: category
+            referencedColumnNames: id
+            onDelete: SET NULL
+            onUpdate: NO ACTION
