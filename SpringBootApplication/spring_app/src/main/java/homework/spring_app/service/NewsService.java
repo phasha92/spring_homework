@@ -1,6 +1,7 @@
 package homework.spring_app.service;
 
 import homework.spring_app.dto.NewsDto;
+import homework.spring_app.exception.EntityNotFoundEntityByID;
 import homework.spring_app.mapper.NewsMapper;
 import homework.spring_app.model.Category;
 import homework.spring_app.model.News;
@@ -17,17 +18,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class NewsService implements ServiceApp<NewsDto> {
 
-    private static final String NOT_EXIST = "Новость не существует!";
-
     private final NewsJPA newsJPA;
     private final CategoryJPA categoryJPA;
     private final NewsMapper mapper;
 
 
     @Override
+    @Transactional
     public NewsDto getById(Long id) {
         Optional<News> news = newsJPA.findById(id);
-        return mapper.toDto(news.orElse(null));
+        return news.map(mapper::toDto).orElseThrow(() -> new EntityNotFoundEntityByID(id, News.class));
     }
 
     @Override
@@ -56,12 +56,13 @@ public class NewsService implements ServiceApp<NewsDto> {
             Optional<Category> category = categoryJPA.getByTitle(newsDto.getCategory());
             category.ifPresent(updateNews::setCategory);
             newsJPA.save(updateNews);
-        } else throw new RuntimeException(NOT_EXIST);
+        } else throw new EntityNotFoundEntityByID(id, News.class);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-       newsJPA.deleteById(id);
+        if (!newsJPA.existsById(id)) throw new EntityNotFoundEntityByID(id, News.class);
+        newsJPA.deleteById(id);
     }
 }

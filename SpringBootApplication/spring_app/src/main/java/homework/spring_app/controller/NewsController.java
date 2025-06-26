@@ -1,6 +1,5 @@
 package homework.spring_app.controller;
 
-import homework.spring_app.dto.FailResponse;
 import homework.spring_app.dto.NewsDto;
 import homework.spring_app.service.ServiceApp;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,6 @@ public class NewsController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getNews(@PathVariable Long id) {
         NewsDto news = service.getById(id);
-        if (news == null) {
-            return notFound(id);
-        }
         return ResponseEntity.ok(news);
     }
 
@@ -34,34 +30,20 @@ public class NewsController {
     @PostMapping
     public ResponseEntity<NewsDto> addNews(@RequestBody NewsDto news) {
         service.add(news);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(news);
+        return ResponseEntity.status(HttpStatus.CREATED).body(news);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateNews(@PathVariable Long id, @RequestBody NewsDto news) {
-        NewsDto oldNews = service.getById(id);
-        if (oldNews == null) {
-            return notFound(id);
-        }
-        service.update(id, news);
+    public ResponseEntity<?> updateNews(@PathVariable Long id, @RequestBody NewsDto newsDto) {
+        NewsDto news = service.getById(id);
+        service.update(id, newsDto);
         return ResponseEntity.ok(news);
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNews(@PathVariable Long id) {
-        if (service.getById(id) == null) {
-            return notFound(id);
-        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    private static ResponseEntity<FailResponse> notFound(Long id) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new FailResponse("Новость с id " + id + " не найдена"));
-    }
 }

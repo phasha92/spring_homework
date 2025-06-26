@@ -1,6 +1,7 @@
 package homework.spring_app.service;
 
 import homework.spring_app.dto.CategoryDto;
+import homework.spring_app.exception.EntityNotFoundEntityByID;
 import homework.spring_app.mapper.CategoryMapper;
 import homework.spring_app.model.Category;
 import homework.spring_app.repository.CategoryJPA;
@@ -15,18 +16,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoryService implements ServiceApp<CategoryDto> {
 
-    private static final String NOT_EXIST = "Категория не существует";
-
     private final CategoryJPA categoryJPA;
     private final CategoryMapper mapper;
 
     @Override
+    @Transactional
     public CategoryDto getById(Long id) {
         Optional<Category> category = categoryJPA.findById(id);
-        return mapper.toDto(category.orElseGet(null));
+        return category.map(mapper::toDto).orElseThrow(() -> new EntityNotFoundEntityByID(id, Category.class));
     }
 
     @Override
+    @Transactional
     public List<CategoryDto> getAll() {
         return categoryJPA.findAll().stream().map(mapper::toDto).toList();
     }
@@ -37,7 +38,6 @@ public class CategoryService implements ServiceApp<CategoryDto> {
         categoryJPA.save(mapper.toEntity(categoryDto));
     }
 
-
     @Override
     @Transactional
     public void update(Long id, CategoryDto categoryDto) {
@@ -46,12 +46,13 @@ public class CategoryService implements ServiceApp<CategoryDto> {
             Category updateCategory = category.get();
             if (categoryDto.getTitle() != null) updateCategory.setTitle(categoryDto.getTitle());
             categoryJPA.save(updateCategory);
-        } else throw new RuntimeException(NOT_EXIST);
+        } else throw new EntityNotFoundEntityByID(id, Category.class);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-            categoryJPA.deleteById(id);
+        if (!categoryJPA.existsById(id)) throw new EntityNotFoundEntityByID(id, Category.class);
+        categoryJPA.deleteById(id);
     }
 }
